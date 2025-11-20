@@ -2,8 +2,8 @@
 
 import { useState, useRef } from 'react'
 import { supabase } from '@/utils/supabase/client'
-import { Send, Image as ImageIcon, Camera, X, Plus, Smile } from 'lucide-react'
-import CameraModal from './CameraModal' // 引入刚才写的相机
+import { Send, Image as ImageIcon, Camera, X, Plus, Smile, Globe, Lock } from 'lucide-react'
+import CameraModal from './CameraModal'
 
 export default function MagicBar() {
   const [content, setContent] = useState('')
@@ -13,13 +13,12 @@ export default function MagicBar() {
   const [showOtherMoods, setShowOtherMoods] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  
-  // 控制相机开关
   const [isCameraOpen, setIsCameraOpen] = useState(false)
+  const [isPublic, setIsPublic] = useState(false) // Default private
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 精致版情绪配置
+  // Mood Config
   const mainMoods = [
     { label: 'Joy', emoji: '🌞', color: 'bg-orange-100 text-orange-600 border-orange-200' },
     { label: 'Calm', emoji: '🍃', color: 'bg-emerald-100 text-emerald-600 border-emerald-200' },
@@ -35,19 +34,16 @@ export default function MagicBar() {
     { label: 'Love', emoji: '❤️' },
   ]
 
-  // 处理相册选择
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFileObject(e.target.files[0])
     }
   }
 
-  // 处理相机拍摄
   const handleCameraCapture = (capturedFile: File) => {
     setFileObject(capturedFile)
   }
 
-  // 统一处理文件预览
   const setFileObject = (file: File) => {
     setFile(file)
     setPreviewUrl(URL.createObjectURL(file))
@@ -72,12 +68,26 @@ export default function MagicBar() {
       }
 
       const finalMood = customMood.trim() ? customMood : mood
+      
       const { error } = await supabase.from('entries').insert({
-        content, mood: finalMood, image_url: imageUrl, user_id: user.id
+        content, 
+        mood: finalMood, 
+        image_url: imageUrl, 
+        user_id: user.id,
+        is_public: isPublic // Save public status
       })
+
       if (error) throw error
 
       await supabase.from('pet_states').update({ last_fed_at: new Date().toISOString() }).eq('user_id', user.id)
+      
+      // Reset Form
+      setContent('')
+      setMood('')
+      setCustomMood('')
+      setFile(null)
+      setPreviewUrl(null)
+      setIsPublic(false) // Reset to private
       
       window.location.reload()
     } catch (err: any) {
@@ -89,7 +99,7 @@ export default function MagicBar() {
 
   return (
     <>
-      {/* 相机弹窗 */}
+      {/* Camera Modal */}
       {isCameraOpen && (
         <CameraModal 
           onCapture={handleCameraCapture} 
@@ -97,11 +107,11 @@ export default function MagicBar() {
         />
       )}
 
-      {/* 主输入区域 - 悬浮卡片风格 */}
+      {/* Main Input Card */}
       <div className="w-full max-w-3xl mx-auto">
         <div className="bg-white/80 backdrop-blur-xl p-5 rounded-3xl shadow-clay border border-white transition-all">
           
-          {/* 1. 情绪胶囊 (更小、更精致) */}
+          {/* 1. Mood Selector */}
           <div className="flex flex-wrap gap-2 mb-4">
             {mainMoods.map((m) => (
               <button
@@ -126,7 +136,7 @@ export default function MagicBar() {
             </button>
           </div>
 
-          {/* 扩展情绪 (滑出动画) */}
+          {/* Extended Moods */}
           {showOtherMoods && (
             <div className="mb-4 p-3 bg-gray-50/50 rounded-2xl border border-gray-100 animate-in slide-in-from-top-2">
               <div className="flex flex-wrap gap-2 mb-3">
@@ -152,7 +162,7 @@ export default function MagicBar() {
             </div>
           )}
 
-          {/* 2. 文本输入 (去掉了那种大灰底，改得更像 Notion) */}
+          {/* 2. Text Input */}
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -160,7 +170,7 @@ export default function MagicBar() {
             className="w-full min-h-[80px] bg-transparent text-base text-textMain placeholder-gray-300 focus:outline-none resize-none mb-2"
           />
 
-          {/* 3. 图片预览 (更加圆润) */}
+          {/* 3. Image Preview */}
           {previewUrl && (
             <div className="relative w-fit mb-4">
               <img src={previewUrl} alt="Preview" className="h-24 rounded-2xl object-cover shadow-sm border border-white" />
@@ -173,10 +183,10 @@ export default function MagicBar() {
             </div>
           )}
 
-          {/* 4. 底部工具栏 (极简) */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-50">
-            <div className="flex gap-1">
-              {/* 真正的相机按钮 */}
+          {/* 4. Bottom Toolbar */}
+          <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+            <div className="flex gap-3 items-center">
+              {/* Camera Button */}
               <button 
                 onClick={() => setIsCameraOpen(true)} 
                 className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-colors"
@@ -185,7 +195,7 @@ export default function MagicBar() {
                 <Camera size={20} />
               </button>
               
-              {/* 相册按钮 */}
+              {/* Gallery Button */}
               <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden" />
               <button 
                 onClick={() => fileInputRef.current?.click()}
@@ -194,10 +204,24 @@ export default function MagicBar() {
               >
                 <ImageIcon size={20} />
               </button>
+
+              {/* --- Public/Private Toggle --- */}
+              <div className="h-6 w-px bg-gray-200 mx-1"></div>
+              <button 
+                onClick={() => setIsPublic(!isPublic)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
+                  isPublic 
+                    ? 'bg-green-100 text-green-600 border border-green-200' 
+                    : 'bg-gray-100 text-gray-400 border border-transparent hover:bg-gray-200'
+                }`}
+              >
+                {isPublic ? <Globe size={14} /> : <Lock size={14} />}
+                {isPublic ? 'Public' : 'Private'}
+              </button>
             </div>
 
             <button
-              onClick={handleSubmit}
+            onClick={handleSubmit}
               disabled={isSubmitting}
               className="px-5 py-2 bg-primary text-white font-bold text-sm rounded-xl hover:bg-primaryHover shadow-lg shadow-orange-100 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-2"
             >

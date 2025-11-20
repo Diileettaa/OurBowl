@@ -45,6 +45,38 @@ export default async function Dashboard() {
           </Link>
         </div>
 
+        {/* === 新增：共养面板 (Co-Op Panel) === */}
+        <div className="bg-gradient-to-br from-[#FF9A9E] to-[#FECFEF] p-6 rounded-[32px] shadow-lg mb-8 text-white relative overflow-hidden group">
+          {/* 装饰背景 */}
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/20 rounded-full blur-3xl"></div>
+          
+          <div className="flex items-center justify-between relative z-10">
+            <div>
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                🏠 Our Little Home
+              </h2>
+              <p className="text-white/80 text-xs mt-1">You & Your Partner</p>
+            </div>
+            <div className="flex -space-x-3">
+              {/* 你的头像 */}
+              <div className="w-10 h-10 rounded-full bg-white/30 border-2 border-white flex items-center justify-center text-lg">😎</div>
+              {/* 伴侣头像 (灰色占位) */}
+              <div className="w-10 h-10 rounded-full bg-black/20 border-2 border-white/50 flex items-center justify-center text-lg grayscale">🐱</div>
+            </div>
+          </div>
+
+          {/* 进度条 */}
+          <div className="mt-6">
+             <div className="flex justify-between text-xs mb-2 opacity-90">
+               <span>Weekly Love</span>
+               <span>85%</span>
+             </div>
+             <div className="w-full h-2 bg-black/10 rounded-full overflow-hidden">
+               <div className="w-[85%] h-full bg-white rounded-full"></div>
+             </div>
+          </div>
+        </div>
+
         {/* 🌟 THE PET SECTION 🌟 */}
         <div className="mb-8">
           {pet ? (
