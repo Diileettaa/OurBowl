@@ -37,38 +37,37 @@ export default function PetMochi({ lastFedAt }: { lastFedAt: string }) {
     }
   }
 
+  // ... 前面的 imports 和 logic 不变 ...
+
   return (
-    <div className="flex flex-col items-center justify-center py-8">
-      {/* The Mochi Body */}
-      <motion.div
-        animate={status}
-        variants={variants}
-        className="w-32 h-32 rounded-[40%_60%_70%_30%_/_40%_50%_60%_50%] shadow-xl flex items-center justify-center relative"
-        style={{ 
-          backgroundColor: variants[status].color,
-          boxShadow: 'inset -10px -10px 20px rgba(0,0,0,0.1)' 
-        }}
-      >
-        {/* Eyes */}
-        <div className="flex gap-4">
-          <div className="w-3 h-3 bg-black/70 rounded-full animate-blink"></div>
-          <div className="w-3 h-3 bg-black/70 rounded-full animate-blink"></div>
-        </div>
+    <div className="flex flex-col items-center justify-center py-4 relative">
+      
+      {/* 🥣 The Bowl (Container) */}
+      <div className="relative w-40 h-20 bg-white border-2 border-gray-100 rounded-b-full shadow-xl flex justify-center items-end overflow-hidden">
+        {/* 装饰纹理 */}
+        <div className="absolute top-2 left-0 w-full h-px bg-blue-100/50"></div>
         
-        {/* Mouth (changes based on status) */}
-        <div className="absolute bottom-8">
-           {status === 'happy' && <div className="w-4 h-2 border-b-2 border-black/70 rounded-full"></div>}
-           {status === 'hungry' && <div className="w-2 h-1 bg-black/70 rounded-full"></div>}
-           {status === 'sleepy' && <div className="text-xs font-bold text-black/50">Zzz...</div>}
-        </div>
-      </motion.div>
+        {/* 🦀 The Guardian (Inside the bowl) */}
+        <motion.div
+          animate={status}
+          variants={variants}
+          className="mb-2 text-6xl relative z-10 cursor-pointer"
+          whileHover={{ scale: 1.2, rotate: 10 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          {/* 根据状态改变形象 */}
+          {status === 'happy' ? '🦀' : status === 'hungry' ? '🐚' : '💤'}
+        </motion.div>
+      </div>
+      
+      {/* Bowl Shadow */}
+      <div className="w-32 h-4 bg-black/5 rounded-[100%] blur-md mt-2"></div>
 
       {/* Status Text */}
-      <p className="mt-4 text-gray-400 text-sm font-mono">
-        {status === 'happy' && "✨ I'm full of energy!"}
-        {status === 'hungry' && "🥪 I'm a bit hungry..."}
-        {status === 'sleepy' && "💤 I'm waiting for you..."}
-      </p>
+      <div className="mt-4 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100 text-xs font-bold text-gray-500 flex items-center gap-2">
+         <div className={`w-2 h-2 rounded-full ${status === 'happy' ? 'bg-green-400' : 'bg-red-400'}`}></div>
+         {status === 'happy' ? "Happy Guardian" : "Needs Food"}
+      </div>
     </div>
   )
 }
