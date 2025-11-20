@@ -14,7 +14,7 @@ export default function Home() {
       email: email,
       options: {
         // Redirect to callback route for PKCE flow
-        emailRedirectTo: 'http://localhost:3000/auth/callback',
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
 
