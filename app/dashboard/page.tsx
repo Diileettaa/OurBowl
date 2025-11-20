@@ -1,16 +1,15 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { supabase } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import MagicBar from '@/components/MagicBar'
-import PetMochi from '@/components/PetMochi'
+import PetSection from '@/components/PetSection' // <--- 1. 引入新组件
 import { X } from 'lucide-react'
 
 const moodEmojiMap: Record<string, string> = {
-  'Joy': '🥰', 'Calm': '🙂', 'Neutral': '😶', 'Tired': '😴', 'Stressed': '🤯',
-  'Angry': '🤬', 'Crying': '😭', 'Excited': '😍', 'Sick': '🤢', 'Proud': '😎', 'Love': '❤️'
+  'Joy': '🥰', 'Calm': '🌿', 'Neutral': '😶', 'Tired': '😴', 'Stressed': '🤯',
+  'Angry': '🤬', 'Crying': '😭', 'Excited': '🎉', 'Sick': '🤢', 'Proud': '😎', 'Love': '❤️'
 }
 
 export default function Dashboard() {
@@ -38,10 +37,9 @@ export default function Dashboard() {
   if (!user) return null
 
   return (
-    // 1. 背景：暖色渐变，找回温馨感
     <div className="min-h-screen bg-gradient-to-b from-[#FFF5EB] to-[#F5F7FA] pb-20 relative">
       
-      {/* 图片全屏查看器 (Lightbox) */}
+      {/* 图片查看器 */}
       {selectedImage && (
         <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setSelectedImage(null)}>
           <button className="absolute top-6 right-6 text-white/70 hover:text-white"><X size={32}/></button>
@@ -51,7 +49,7 @@ export default function Dashboard() {
 
       <div className="max-w-2xl mx-auto px-4 pt-8 relative z-10">
         
-        {/* Header: 干净清爽 */}
+        {/* 顶部 Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-black text-gray-800 tracking-tight">Hello, Owner</h1>
@@ -62,14 +60,11 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        {/* 🌟 宠物舞台：给它足够的空间，防止变形 */}
-        <div className="relative h-56 flex items-end justify-center z-0 pointer-events-none -mb-8">
-            <div className="pointer-events-auto scale-110 origin-bottom"> 
-               {pet ? <PetMochi lastFedAt={pet.last_fed_at} /> : <div className="text-4xl animate-bounce">🥚</div>}
-            </div>
-        </div>
+        {/* 🌟 宠物区域：现在只需要这一行代码！🌟 */}
+        {/* 以后不管你怎么改下面的列表，只要保留这行，宠物永远安全 */}
+        <PetSection pet={pet} />
 
-        {/* 输入框：粘性定位，微微向上覆盖一点宠物，形成连接感 */}
+        {/* 输入框 */}
         <div className="mb-10 sticky top-6 z-40">
            <MagicBar />
         </div>
@@ -80,7 +75,7 @@ export default function Dashboard() {
           <span className="text-[10px] font-bold text-gray-400 bg-white px-3 py-1 rounded-full shadow-sm border border-gray-100">Today</span>
         </div>
 
-        {/* 🌟 列表内容：左文右图 */}
+        {/* 列表内容 */}
         <div className="space-y-4">
           {entries.map((entry) => {
              const lines = entry.content?.split('\n') || []
@@ -90,8 +85,6 @@ export default function Dashboard() {
 
              return (
               <div key={entry.id} className="bg-white p-5 rounded-[28px] shadow-sm border border-white/50 hover:shadow-md transition-all flex justify-between gap-4 group">
-                
-                {/* 左侧：文字信息 */}
                 <div className="flex-1 flex flex-col min-w-0">
                    <div className="flex items-center gap-2 mb-2">
                       <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wide ${
@@ -103,34 +96,24 @@ export default function Dashboard() {
                         {moodEmoji}
                       </div>
                    </div>
-
                    <h4 className="text-gray-800 font-bold text-lg truncate pr-2 mb-1">{title}</h4>
-                   
                    {details.replace('💭', '').trim() && (
                      <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed mb-3 font-medium">
                        {details.replace('💭', '').trim()}
                      </p>
                    )}
-
                    <div className="mt-auto text-[10px] text-gray-300 font-mono flex gap-2">
                       <span>{new Date(entry.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                    </div>
                 </div>
-
-                {/* 右侧：正方形图片 */}
                 {entry.image_url && (
-                  <div 
-                    className="w-24 h-24 shrink-0 rounded-2xl bg-gray-100 overflow-hidden cursor-zoom-in relative shadow-inner border border-gray-100"
-                    onClick={() => setSelectedImage(entry.image_url)}
-                  >
+                  <div className="w-24 h-24 shrink-0 rounded-2xl bg-gray-100 overflow-hidden cursor-zoom-in relative shadow-inner border border-gray-100" onClick={() => setSelectedImage(entry.image_url)}>
                     <img src={entry.image_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   </div>
                 )}
-
               </div>
              )
           })}
-
           {entries.length === 0 && (
             <div className="text-center py-12">
               <p className="text-gray-300 text-sm">Waiting for your first story...</p>
