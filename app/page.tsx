@@ -21,7 +21,7 @@ export default function Home() {
     const { error } = await supabase.auth.signInWithOtp({
       email: email,
       options: {
-        emailRedirectTo: redirectUrl, // 使用我们刚才判断好的地址
+        emailRedirectTo: 'https://ourbowl.vercel.app/auth/callback',
       },
     })
 
