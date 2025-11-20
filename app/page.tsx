@@ -8,13 +8,20 @@ export default function Home() {
   const [message, setMessage] = useState('')
 
   // Handle login logic
+  // Handle login logic
   const handleLogin = async () => {
     setLoading(true)
+    
+    // 👇 核心修改：明确告诉代码，线上环境用线上地址，本地用本地地址
+    // 这样绝对不会搞错！
+    const redirectUrl = process.env.NODE_ENV === 'production'
+      ? 'https://ourbowl.vercel.app/auth/callback' // 线上地址
+      : 'http://localhost:3000/auth/callback'      // 本地地址
+
     const { error } = await supabase.auth.signInWithOtp({
       email: email,
       options: {
-        // Redirect to callback route for PKCE flow
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: redirectUrl, // 使用我们刚才判断好的地址
       },
     })
 
