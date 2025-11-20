@@ -2,14 +2,12 @@
 
 import { useState, useRef } from 'react'
 import { supabase } from '@/utils/supabase/client'
-import { Send, Camera, Image as ImageIcon, X, Plus, Utensils, Sparkles, ChevronUp } from 'lucide-react' // 引入餐具和闪光图标
+import { Send, Camera, Image as ImageIcon, X, ChevronUp, Utensils, Sparkles, PenLine, AlignLeft } from 'lucide-react'
 import CameraModal from './CameraModal'
 
 export default function MagicBar() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
-  // ✨ 新增：模式切换 ('food' | 'life')
   const [recordMode, setRecordMode] = useState<'food' | 'life'>('food')
   
   const [content, setContent] = useState('')
@@ -26,6 +24,7 @@ export default function MagicBar() {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // 真实 Emoji 配置
   const meals = [
     { label: 'Breakfast', icon: '🍳' },
     { label: 'Lunch', icon: '🍱' },
@@ -33,29 +32,29 @@ export default function MagicBar() {
     { label: 'Snack', icon: '🍪' },
     { label: 'Coffee', icon: '☕' },
   ]
-
   const mainMoods = [
-    { label: 'Joy', emoji: '🥰', color: 'bg-orange-50 border-orange-200' },
-    { label: 'Calm', emoji: '🌿', color: 'bg-emerald-50 border-emerald-200' },
-    { label: 'Neutral', emoji: '😶', color: 'bg-slate-50 border-slate-200' },
-    { label: 'Tired', emoji: '😴', color: 'bg-indigo-50 border-indigo-200' },
-    { label: 'Stressed', emoji: '🤯', color: 'bg-rose-50 border-rose-200' },
+    { label: 'Joy', emoji: '🥰', color: 'bg-orange-100 border-orange-200 text-orange-700' },
+    { label: 'Calm', emoji: '🙂', color: 'bg-emerald-100 border-emerald-200 text-emerald-700' },
+    { label: 'Neutral', emoji: '😶', color: 'bg-slate-100 border-slate-200 text-slate-700' },
+    { label: 'Tired', emoji: '😴', color: 'bg-indigo-100 border-indigo-200 text-indigo-700' },
+    { label: 'Stressed', emoji: '🤯', color: 'bg-rose-100 border-rose-200 text-rose-700' },
   ]
-
   const otherMoods = [
     { label: 'Angry', emoji: '🤬' },
     { label: 'Crying', emoji: '😭' },
-    { label: 'Excited', emoji: '🎉' },
+    { label: 'Excited', emoji: '😍' },
     { label: 'Sick', emoji: '🤢' },
     { label: 'Proud', emoji: '😎' },
+    { label: 'Love', emoji: '❤️' },
   ]
 
-  // --- 逻辑部分保持不变 ---
   const handleFocus = () => setIsExpanded(true)
+  
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setFileObject(e.target.files[0])
   }
   const handleCameraCapture = (file: File) => setFileObject(file)
+  
   const setFileObject = (file: File) => {
     setFile(file)
     setPreviewUrl(URL.createObjectURL(file))
@@ -77,21 +76,21 @@ export default function MagicBar() {
         imageUrl = data.publicUrl
       }
 
-      // 组合内容：如果是生活模式，直接存 content；如果是饮食模式，组合 food + content
       let finalContent = content
       if (recordMode === 'food' && foodContent) {
-        finalContent = `${foodContent}\n\n💭 ${content}`
+        // 存入格式： 食物名称 + 换行 + 详细描述
+        finalContent = `${foodContent}\n${content}`
       }
 
       const finalMood = customMood.trim() ? customMood : mood
       
       await supabase.from('entries').insert({
-        content: finalContent,
+        content: finalContent.trim(),
         mood: finalMood, 
         image_url: imageUrl, 
         user_id: user.id,
         is_public: isPublic,
-        meal_type: recordMode === 'food' ? mealType : 'Life' // 生活模式标记为 Life
+        meal_type: recordMode === 'food' ? mealType : 'Life'
       })
 
       await supabase.from('pet_states').update({ last_fed_at: new Date().toISOString() }).eq('user_id', user.id)
@@ -106,24 +105,23 @@ export default function MagicBar() {
     <>
       {isCameraOpen && <CameraModal onCapture={handleCameraCapture} onClose={() => setIsCameraOpen(false)} />}
 
-      <div className="w-full max-w-2xl mx-auto relative">
-        
-        {/* 主卡片 */}
-        <div className={`bg-white rounded-[24px] shadow-clay border border-white transition-all duration-500 ease-in-out overflow-hidden ${isExpanded ? 'p-5' : 'p-3'}`}>
+      <div className="w-full max-w-2xl mx-auto relative z-50">
+        <div className={`bg-white rounded-[24px] shadow-clay border border-white transition-all duration-300 ease-out overflow-hidden ${isExpanded ? 'p-5' : 'p-3'}`}>
           
           {/* 收起状态 */}
           {!isExpanded && (
             <div className="flex items-center gap-3">
-               <button onClick={() => setIsCameraOpen(true)} className="p-3 bg-gray-50 text-gray-500 rounded-2xl hover:bg-blue-50 hover:text-blue-500">
+               <button onClick={() => setIsCameraOpen(true)} className="p-3 bg-gray-50 text-gray-500 rounded-2xl hover:bg-blue-50 hover:text-blue-500 transition-colors">
                  <Camera size={20} />
                </button>
-               <div onClick={handleFocus} className="flex-1 h-12 bg-gray-50 rounded-2xl flex items-center px-4 text-gray-400 cursor-text text-sm font-medium">
-                 {recordMode === 'food' ? "What did you eat?" : "Record your life..."}
+               <div onClick={handleFocus} className="flex-1 h-12 bg-gray-50 rounded-2xl flex items-center px-4 text-gray-400 cursor-text text-sm font-medium group hover:bg-gray-100 transition-colors">
+                 <span className="group-hover:text-gray-600 transition-colors">
+                   {recordMode === 'food' ? "Record your meal..." : "Record a moment..."}
+                 </span>
                </div>
-               {/* 收起状态下的小切换钮 */}
                <button 
                  onClick={() => setRecordMode(recordMode === 'food' ? 'life' : 'food')}
-                 className="p-3 bg-yellow-50 text-yellow-600 rounded-2xl"
+                 className={`p-3 rounded-2xl transition-colors ${recordMode === 'food' ? 'bg-orange-50 text-orange-500' : 'bg-purple-50 text-purple-500'}`}
                >
                  {recordMode === 'food' ? <Utensils size={20}/> : <Sparkles size={20}/>}
                </button>
@@ -134,143 +132,156 @@ export default function MagicBar() {
           {isExpanded && (
             <div className="flex gap-4">
               
-              {/* 左侧：主要表单区 */}
-              <div className="flex-1 space-y-5 animate-in fade-in">
+              <div className="flex-1 space-y-5 animate-in fade-in zoom-in-95 duration-200">
                 
-                {/* 顶部 Header */}
                 <div className="flex justify-between items-center">
-                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                     {recordMode === 'food' ? 'Food Log' : 'Life Log'}
+                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">
+                     {recordMode === 'food' ? 'New Food Log' : 'New Life Log'}
                    </span>
-                   <button onClick={() => setIsExpanded(false)} className="p-1 text-gray-300 hover:bg-gray-50 rounded-full"><ChevronUp size={16}/></button>
+                   <button onClick={() => setIsExpanded(false)} className="p-1 text-gray-300 hover:bg-gray-100 rounded-full transition-colors"><ChevronUp size={18}/></button>
                 </div>
 
                 {/* 图片预览 */}
                 {previewUrl && (
-                  <div className="relative w-full h-40 rounded-2xl overflow-hidden">
+                  <div className="relative w-full h-48 rounded-2xl overflow-hidden group border border-gray-100">
                     <img src={previewUrl} className="w-full h-full object-cover" />
-                    <button onClick={() => {setFile(null); setPreviewUrl(null)}} className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full"><X size={14}/></button>
+                    <button onClick={() => {setFile(null); setPreviewUrl(null)}} className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full hover:bg-black/70 transition-colors"><X size={14}/></button>
                   </div>
                 )}
 
-                {/* 🍴 只有在 Food 模式下显示餐点选择 */}
+                {/* 餐点选择 */}
                 {recordMode === 'food' && (
                   <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     {meals.map(m => (
                       <button
                         key={m.label}
                         onClick={() => setMealType(mealType === m.label ? '' : m.label)}
-                        className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                          mealType === m.label ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-500 border-gray-100'
+                        className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${
+                          mealType === m.label ? 'bg-gray-900 text-white border-gray-900 shadow-md' : 'bg-white text-gray-500 border-gray-100 hover:border-gray-300 hover:bg-gray-50'
                         }`}
                       >
-                        {m.icon} {m.label}
+                        <span>{m.icon}</span> {m.label}
                       </button>
                     ))}
                   </div>
                 )}
 
-                {/* 输入框区域 (根据模式变化) */}
+                {/* 输入区域 */}
                 <div className="space-y-3">
+                  {/* 标题输入框 (加粗) */}
                   {recordMode === 'food' && (
-                    <input 
-                      autoFocus
-                      value={foodContent}
-                      onChange={e => setFoodContent(e.target.value)}
-                      placeholder="I ate..."
-                      className="w-full text-xl font-bold text-gray-800 placeholder-gray-300 outline-none bg-transparent"
-                    />
+                    <div className="relative group">
+                      <div className="absolute top-3 left-3 text-gray-400"><PenLine size={18}/></div>
+                      <input 
+                        autoFocus
+                        value={foodContent}
+                        onChange={e => setFoodContent(e.target.value)}
+                        placeholder="What did you eat?"
+                        className="w-full pl-10 pr-4 py-3 text-lg font-bold text-gray-800 placeholder-gray-300 bg-gray-50/50 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-100 outline-none transition-all"
+                      />
+                    </div>
                   )}
-                  <textarea 
-                    value={content}
-                    onChange={e => setContent(e.target.value)}
-                    placeholder={recordMode === 'food' ? "Add details... (calories, etc)" : "What happened today?"}
-                    className={`w-full text-sm text-gray-600 placeholder-gray-300 outline-none bg-transparent resize-none ${recordMode === 'life' ? 'h-32 text-lg' : 'h-16'}`}
-                  />
+                  
+                  {/* 详细输入框 (普通) */}
+                  <div className="relative">
+                     <div className="absolute top-3 left-3 text-gray-400"><AlignLeft size={18}/></div>
+                     <textarea 
+                      value={content}
+                      onChange={e => setContent(e.target.value)}
+                      placeholder={recordMode === 'food' ? "Details (calories, taste, price)..." : "What's on your mind?"}
+                      className={`w-full pl-10 pr-4 py-3 text-sm text-gray-600 placeholder-gray-300 bg-gray-50/50 rounded-2xl focus:bg-white focus:ring-2 focus:ring-purple-100 outline-none resize-none transition-all ${recordMode === 'life' ? 'h-32 text-base' : 'h-20'}`}
+                    />
+                  </div>
                 </div>
 
-                {/* 心情选择 (去掉了 grayscale) */}
-                <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                  {mainMoods.map(m => (
-                    <button
-                      key={m.label}
-                      onClick={() => setMood(m.label)}
-                      className={`flex-shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                        mood === m.label 
-                        ? 'bg-white border-gray-800 shadow-md scale-105' // 选中态
-                        : 'bg-gray-50 border-transparent text-gray-500 hover:bg-white hover:border-gray-200' // 默认态 (彩色emoji)
-                      }`}
-                    >
-                      <span className="text-lg">{m.emoji}</span>
-                      {m.label}
+                {/* 心情选择 */}
+                <div className="space-y-2">
+                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Mood</label>
+                   <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                    {mainMoods.map(m => (
+                      <button
+                        key={m.label}
+                        onClick={() => setMood(m.label)}
+                        className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                          mood === m.label 
+                          ? `${m.color} shadow-sm scale-105` 
+                          : 'bg-white border-gray-100 text-gray-400 hover:bg-gray-50'
+                        }`}
+                      >
+                        <span className="text-base">{m.emoji}</span>
+                        {m.label}
+                      </button>
+                    ))}
+                    <button onClick={() => setShowOtherMoods(!showOtherMoods)} className="px-3 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-400 hover:bg-gray-100 border border-transparent hover:border-gray-200 transition-all">
+                      +
                     </button>
-                  ))}
-                  <button onClick={() => setShowOtherMoods(!showOtherMoods)} className="px-3 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-400">
-                    +
-                  </button>
+                  </div>
                 </div>
                 
-                {/* 更多心情面板 */}
+                {/* 更多心情 (现在可以点了！) */}
                 {showOtherMoods && (
-                   <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-2xl">
+                   <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100 animate-in fade-in slide-in-from-top-1">
                       {otherMoods.map(m => (
-                        <button key={m.label} onClick={() => {setMood(m.label); setCustomMood('')}} className="px-3 py-1 bg-white rounded-lg text-xs border border-gray-100 shadow-sm">
+                        <button 
+                          key={m.label} 
+                          type="button" // 关键修复：防止触发表单
+                          onClick={() => { setMood(m.label); setCustomMood(''); }} 
+                          className={`px-3 py-1.5 bg-white rounded-lg text-xs font-medium border shadow-sm transition-all hover:scale-105 ${
+                             mood === m.label ? 'border-purple-400 text-purple-600 ring-1 ring-purple-100' : 'border-gray-100 text-gray-600 hover:border-gray-300'
+                          }`}
+                        >
                           {m.emoji} {m.label}
                         </button>
                       ))}
                       <input 
-                        placeholder="Custom..." 
+                        placeholder="Type custom mood..." 
                         value={customMood} 
-                        onChange={e => setCustomMood(e.target.value)}
-                        className="flex-1 px-2 bg-transparent text-xs outline-none min-w-[60px]" 
+                        onChange={e => {setCustomMood(e.target.value); setMood('')}}
+                        className="flex-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs outline-none focus:border-purple-400 min-w-[100px]" 
                       />
                    </div>
                 )}
 
-                {/* 底部按钮 */}
+                {/* 底部提交 */}
                 <div className="flex items-center justify-between pt-2">
-                   <div className="flex gap-2">
-                      <button onClick={() => setIsCameraOpen(true)} className="p-2 text-gray-400 hover:bg-gray-50 rounded-xl"><Camera size={20}/></button>
+                   <div className="flex gap-1">
+                      <button onClick={() => setIsCameraOpen(true)} className="p-2.5 text-gray-400 hover:bg-blue-50 hover:text-blue-500 rounded-xl transition-colors"><Camera size={20}/></button>
                       <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden"/>
-                      <button onClick={() => fileInputRef.current?.click()} className="p-2 text-gray-400 hover:bg-gray-50 rounded-xl"><ImageIcon size={20}/></button>
+                      <button onClick={() => fileInputRef.current?.click()} className="p-2.5 text-gray-400 hover:bg-green-50 hover:text-green-500 rounded-xl transition-colors"><ImageIcon size={20}/></button>
                    </div>
                    <button 
                      onClick={handleSubmit}
                      disabled={isSubmitting}
-                     className="bg-[#F5C066] hover:bg-[#E0A845] text-white px-6 py-2 rounded-xl font-bold text-sm shadow-lg shadow-orange-100 transition-all active:scale-95"
+                     className="bg-[#F5C066] hover:bg-[#E0A845] text-white px-8 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-orange-100 transition-all active:scale-95 flex items-center gap-2"
                    >
-                     {isSubmitting ? 'Saving...' : 'Save'}
+                     {isSubmitting ? 'Saving...' : 'Save Record'} <Send size={16} />
                    </button>
                 </div>
-
               </div>
 
-              {/* 👉 右侧：模式切换栏 (Sidebar) */}
-              <div className="w-12 flex flex-col gap-2 pt-8">
+              {/* 右侧模式切换栏 */}
+              <div className="w-10 flex flex-col gap-3 pt-8">
                  <button 
                    onClick={() => setRecordMode('food')}
-                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-sm ${
                      recordMode === 'food' 
-                     ? 'bg-black text-white shadow-lg scale-110' 
-                     : 'bg-gray-50 text-gray-300 hover:bg-gray-100'
+                     ? 'bg-gray-900 text-white ring-2 ring-offset-2 ring-gray-900' 
+                     : 'bg-white text-gray-300 hover:text-gray-500 hover:bg-gray-50 border border-gray-100'
                    }`}
-                   title="Food Mode"
                  >
                    <Utensils size={18} />
                  </button>
                  <button 
                    onClick={() => setRecordMode('life')}
-                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                   className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-sm ${
                      recordMode === 'life' 
-                     ? 'bg-purple-500 text-white shadow-lg scale-110' 
-                     : 'bg-gray-50 text-gray-300 hover:bg-gray-100'
+                     ? 'bg-purple-500 text-white ring-2 ring-offset-2 ring-purple-500' 
+                     : 'bg-white text-gray-300 hover:text-gray-500 hover:bg-gray-50 border border-gray-100'
                    }`}
-                   title="Life Mode"
                  >
                    <Sparkles size={18} />
                  </button>
               </div>
-
             </div>
           )}
         </div>
