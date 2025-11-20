@@ -1,128 +1,114 @@
 'use client'
 
-import { motion, useAnimation } from 'framer-motion'
-import { useState, useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 
 export default function PetMochi({ lastFedAt }: { lastFedAt: string }) {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-  const containerRef = useRef<HTMLDivElement>(null)
-  const controls = useAnimation()
+  const [isHovered, setIsHovered] = useState(false)
+  const [blink, setBlink] = useState(false)
 
-  // 1. 计算状态 (饿了就睡觉，饱了就活跃)
+  // 1. 眨眼逻辑 (随机眨眼，像活物)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBlink(true)
+      setTimeout(() => setBlink(false), 200)
+    }, Math.random() * 3000 + 2000) // 每2-5秒眨眼一次
+    return () => clearInterval(interval)
+  }, [])
+
+  // 2. 状态计算
   const getStatus = () => {
     const lastFed = new Date(lastFedAt).getTime()
     const now = new Date().getTime()
-    const hoursSince = (now - lastFed) / (1000 * 60 * 60)
-    // 24小时内算活跃，否则算睡觉
-    return hoursSince < 24 ? 'active' : 'sleep'
+    return (now - lastFed) / (1000 * 60 * 60) < 24 ? 'happy' : 'hungry'
   }
-
   const status = getStatus()
 
-  // 2. 鼠标追踪逻辑 (让眼睛跟着鼠标动)
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return
-      const rect = containerRef.current.getBoundingClientRect()
-      // 计算鼠标相对于团子中心的位置 (-1 到 1)
-      const x = (e.clientX - (rect.left + rect.width / 2)) / 20
-      const y = (e.clientY - (rect.top + rect.height / 2)) / 20
-      setMousePos({ x, y })
-    }
-    
-    if (status === 'active') {
-      window.addEventListener('mousemove', handleMouseMove)
-    }
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [status])
-
   return (
-    <div ref={containerRef} className="relative flex flex-col items-center justify-center py-10 h-64">
+    <div className="relative flex flex-col items-center justify-center h-48 w-full">
       
-      {/* 🥣 容器：极简的陶瓷碗 (高级感) */}
-      <div className="relative w-48 h-24">
-        {/* 碗的后壁 (稍微暗一点) */}
-        <div className="absolute bottom-0 w-full h-full bg-gray-100 rounded-b-[100px] border-2 border-white shadow-inner z-0"></div>
+      {/* 互动区域：把整个碗包起来 */}
+      <motion.div 
+        className="relative cursor-pointer"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        whileTap={{ scale: 0.95, rotate: -5 }} // 点击时的 Q 弹效果
+      >
         
-        {/* ✨✨✨ 主角：灵动团子 ✨✨✨ */}
+        {/* ✨ 宠物本体 (Mochi) */}
         <motion.div
-          className="absolute left-1/2 -translate-x-1/2 bottom-4 z-10 cursor-pointer"
-          initial={false}
-          animate={status}
-          variants={{
-            active: {
-              y: [0, -10, 0], // 呼吸浮动
-              scale: [1, 1.05, 0.98, 1], // 软体弹性
-              transition: { repeat: Infinity, duration: 4, ease: "easeInOut" }
-            },
-            sleep: {
-              y: 10, // 瘫下去
-              scaleX: 1.2, // 变扁
-              scaleY: 0.8,
-              transition: { duration: 0.5 }
-            }
+          className="relative z-10 w-28 h-24 mx-auto"
+          animate={status === 'happy' ? {
+            y: [0, -5, 0], // 呼吸浮动
+            scaleY: [1, 1.05, 1], // 软体拉伸
+          } : {
+            y: 10, scaleY: 0.9 // 饿了就瘫着
           }}
-          whileHover={{ scale: 1.1, transition: { duration: 0.2 } }}
-          whileTap={{ scale: 0.9, transition: { duration: 0.1 } }}
+          transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
         >
-          {/* 身体：高斯模糊 + 渐变 (像一块发光的玉) */}
-          <div className="w-32 h-28 bg-gradient-to-b from-white to-orange-50 rounded-[45%] shadow-[0_0_30px_rgba(255,200,100,0.3)] border border-white/50 backdrop-blur-sm relative flex justify-center items-center">
+          {/* 身体：白色渐变，像棉花糖 */}
+          <div className={`w-full h-full rounded-[45%] border-2 border-white/50 backdrop-blur-sm shadow-[inset_-10px_-5px_20px_rgba(0,0,0,0.05)] ${
+            status === 'happy' 
+              ? 'bg-gradient-to-b from-white to-orange-50' // 开心是暖色
+              : 'bg-gradient-to-b from-gray-50 to-blue-50' // 饿了是冷色
+          }`}>
             
-            {/* 脸部 */}
-            {status === 'active' ? (
-              // 😳 醒着：眼睛跟随鼠标
-              <div className="flex gap-6 mt-2">
-                {/* 左眼 */}
-                <div className="w-3 h-4 bg-gray-800 rounded-full relative overflow-hidden">
-                  <motion.div 
-                    className="w-1 h-1 bg-white rounded-full absolute top-1 right-1"
-                    animate={{ x: mousePos.x, y: mousePos.y }}
-                  />
-                </div>
-                {/* 右眼 */}
-                <div className="w-3 h-4 bg-gray-800 rounded-full relative overflow-hidden">
-                   <motion.div 
-                    className="w-1 h-1 bg-white rounded-full absolute top-1 right-1"
-                    animate={{ x: mousePos.x, y: mousePos.y }}
-                  />
-                </div>
-                {/* 腮红 */}
-                <div className="absolute left-2 top-14 w-4 h-2 bg-red-200 rounded-full blur-sm opacity-60"></div>
-                <div className="absolute right-2 top-14 w-4 h-2 bg-red-200 rounded-full blur-sm opacity-60"></div>
-              </div>
-            ) : (
-              // 💤 睡着：闭眼 + 鼻涕泡
-              <div className="relative mt-4">
-                <div className="flex gap-6">
-                  <div className="w-4 h-1 bg-gray-400 rounded-full rotate-12"></div>
-                  <div className="w-4 h-1 bg-gray-400 rounded-full -rotate-12"></div>
-                </div>
-                {/* 鼻涕泡动画 */}
+            {/* 表情 (绝对定位在身体里) */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
+              {/* 眼睛 */}
+              <div className="flex gap-5">
                 <motion.div 
-                  className="absolute -right-4 -top-4 w-6 h-6 bg-blue-100/50 rounded-full border border-blue-200"
-                  animate={{ scale: [0.8, 1.5, 0.8], opacity: [0.5, 0.8, 0.5] }}
-                  transition={{ repeat: Infinity, duration: 3 }}
+                  className="w-2 h-3 bg-gray-800 rounded-full"
+                  animate={{ scaleY: blink ? 0.1 : 1 }} // 眨眼动画
+                />
+                <motion.div 
+                  className="w-2 h-3 bg-gray-800 rounded-full"
+                  animate={{ scaleY: blink ? 0.1 : 1 }}
                 />
               </div>
-            )}
-            
+              
+              {/* 腮红 (开心时显示) */}
+              {status === 'happy' && (
+                <div className="w-full flex justify-between px-1 absolute top-2">
+                  <div className="w-3 h-1.5 bg-pink-200 rounded-full blur-sm"></div>
+                  <div className="w-3 h-1.5 bg-pink-200 rounded-full blur-sm"></div>
+                </div>
+              )}
+
+              {/* 嘴巴 (SVG 画个微笑) */}
+              {status === 'happy' ? (
+                <svg width="14" height="8" viewBox="0 0 14 8" className="opacity-60">
+                  <path d="M1 1C1 1 4 7 7 7C10 7 13 1 13 1" stroke="#374151" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                </svg>
+              ) : (
+                <div className="w-2 h-1 bg-gray-400 rounded-full mt-1"></div> // 饿了抿嘴
+              )}
+            </div>
           </div>
         </motion.div>
 
-        {/* 碗的前壁 (半透明磨砂，挡住团子下半部分，营造“泡在碗里”的感觉) */}
-        <div className="absolute bottom-0 w-full h-full bg-white/40 backdrop-blur-[2px] rounded-b-[100px] border-t border-white/50 z-20 pointer-events-none"></div>
-      </div>
+        {/* 🥣 真实的碗 (分层渲染) */}
+        <div className="relative -mt-8 z-20">
+          {/* 碗口阴影 */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-36 h-4 bg-black/10 blur-md rounded-[100%]"></div>
+          
+          {/* 碗体 */}
+          <div className="w-40 h-16 bg-gradient-to-b from-white to-gray-100 border border-white rounded-b-[80px] shadow-clay relative overflow-hidden">
+             {/* 碗上的光泽 */}
+             <div className="absolute top-2 right-4 w-8 h-4 bg-white/80 rounded-full blur-sm rotate-[-20deg]"></div>
+          </div>
+        </div>
 
-      {/* 状态文字 */}
-      <div className="mt-6 flex flex-col items-center gap-1">
-        <span className="text-xs font-bold tracking-widest text-gray-300 uppercase">
-          {status === 'active' ? '● Online' : '○ Sleeping'}
-        </span>
-        <p className="text-sm text-gray-500 font-medium">
-          {status === 'active' ? "I'm watching you 👀" : "Zzz... Feed me to wake up"}
-        </p>
-      </div>
+        {/* 互动气泡 (Hover 时才显示) */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 10 }}
+          className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-white px-3 py-1 rounded-full text-xs text-gray-500 shadow-sm border border-gray-100"
+        >
+          {status === 'happy' ? "Poke me! ✨" : "I'm hungry..."}
+        </motion.div>
 
+      </motion.div>
     </div>
   )
 }
