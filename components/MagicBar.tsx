@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { supabase } from '@/utils/supabase/client'
-import { Send, Camera, Image as ImageIcon, X, ChevronUp, Utensils, Sparkles, PenLine, AlignLeft } from 'lucide-react'
+import { Send, Camera, Image as ImageIcon, X, ChevronUp, Utensils, Sparkles, AlignLeft } from 'lucide-react'
 import CameraModal from './CameraModal'
 
 export default function MagicBar() {
@@ -24,7 +24,6 @@ export default function MagicBar() {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // 真实 Emoji 配置
   const meals = [
     { label: 'Breakfast', icon: '🍳' },
     { label: 'Lunch', icon: '🍱' },
@@ -34,7 +33,7 @@ export default function MagicBar() {
   ]
   const mainMoods = [
     { label: 'Joy', emoji: '🥰', color: 'bg-orange-100 border-orange-200 text-orange-700' },
-    { label: 'Calm', emoji: '🙂', color: 'bg-emerald-100 border-emerald-200 text-emerald-700' },
+    { label: 'Calm', emoji: '🌿', color: 'bg-emerald-100 border-emerald-200 text-emerald-700' },
     { label: 'Neutral', emoji: '😶', color: 'bg-slate-100 border-slate-200 text-slate-700' },
     { label: 'Tired', emoji: '😴', color: 'bg-indigo-100 border-indigo-200 text-indigo-700' },
     { label: 'Stressed', emoji: '🤯', color: 'bg-rose-100 border-rose-200 text-rose-700' },
@@ -42,7 +41,7 @@ export default function MagicBar() {
   const otherMoods = [
     { label: 'Angry', emoji: '🤬' },
     { label: 'Crying', emoji: '😭' },
-    { label: 'Excited', emoji: '😍' },
+    { label: 'Excited', emoji: '🎉' },
     { label: 'Sick', emoji: '🤢' },
     { label: 'Proud', emoji: '😎' },
     { label: 'Love', emoji: '❤️' },
@@ -78,7 +77,6 @@ export default function MagicBar() {
 
       let finalContent = content
       if (recordMode === 'food' && foodContent) {
-        // 存入格式： 食物名称 + 换行 + 详细描述
         finalContent = `${foodContent}\n${content}`
       }
 
@@ -116,7 +114,7 @@ export default function MagicBar() {
                </button>
                <div onClick={handleFocus} className="flex-1 h-12 bg-gray-50 rounded-2xl flex items-center px-4 text-gray-400 cursor-text text-sm font-medium group hover:bg-gray-100 transition-colors">
                  <span className="group-hover:text-gray-600 transition-colors">
-                   {recordMode === 'food' ? "Record your meal..." : "Record a moment..."}
+                   {recordMode === 'food' ? "Record meal..." : "Record moment..."}
                  </span>
                </div>
                <button 
@@ -132,7 +130,7 @@ export default function MagicBar() {
           {isExpanded && (
             <div className="flex gap-4">
               
-              <div className="flex-1 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex-1 space-y-4 animate-in fade-in zoom-in-95 duration-200">
                 
                 <div className="flex justify-between items-center">
                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">
@@ -141,15 +139,13 @@ export default function MagicBar() {
                    <button onClick={() => setIsExpanded(false)} className="p-1 text-gray-300 hover:bg-gray-100 rounded-full transition-colors"><ChevronUp size={18}/></button>
                 </div>
 
-                {/* 图片预览 */}
                 {previewUrl && (
-                  <div className="relative w-full h-48 rounded-2xl overflow-hidden group border border-gray-100">
+                  <div className="relative w-full h-40 rounded-2xl overflow-hidden group border border-gray-100">
                     <img src={previewUrl} className="w-full h-full object-cover" />
                     <button onClick={() => {setFile(null); setPreviewUrl(null)}} className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full hover:bg-black/70 transition-colors"><X size={14}/></button>
                   </div>
                 )}
 
-                {/* 餐点选择 */}
                 {recordMode === 'food' && (
                   <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                     {meals.map(m => (
@@ -166,65 +162,57 @@ export default function MagicBar() {
                   </div>
                 )}
 
-                {/* 输入区域 */}
-                <div className="space-y-3">
-                  {/* 标题输入框 (加粗) */}
+                {/* 优化后的输入框组合：去掉多余的线条，更紧凑 */}
+                <div className="bg-gray-50/50 rounded-2xl p-2 focus-within:bg-white focus-within:ring-2 focus-within:ring-orange-100 transition-all">
                   {recordMode === 'food' && (
-                    <div className="relative group">
-                      <div className="absolute top-3 left-3 text-gray-400"><PenLine size={18}/></div>
-                      <input 
-                        autoFocus
-                        value={foodContent}
-                        onChange={e => setFoodContent(e.target.value)}
-                        placeholder="What did you eat?"
-                        className="w-full pl-10 pr-4 py-3 text-lg font-bold text-gray-800 placeholder-gray-300 bg-gray-50/50 rounded-2xl focus:bg-white focus:ring-2 focus:ring-orange-100 outline-none transition-all"
-                      />
-                    </div>
+                    <input 
+                      autoFocus
+                      value={foodContent}
+                      onChange={e => setFoodContent(e.target.value)}
+                      placeholder="What did you eat?"
+                      // 字体调小了一点 (text-lg)
+                      className="w-full px-2 py-2 text-lg font-bold text-gray-800 placeholder-gray-300 bg-transparent outline-none border-b border-gray-200/50 mb-2"
+                    />
                   )}
                   
-                  {/* 详细输入框 (普通) */}
-                  <div className="relative">
-                     <div className="absolute top-3 left-3 text-gray-400"><AlignLeft size={18}/></div>
+                  <div className="flex items-start gap-2 px-2">
+                     <AlignLeft size={16} className="text-gray-300 mt-1" />
                      <textarea 
                       value={content}
                       onChange={e => setContent(e.target.value)}
-                      placeholder={recordMode === 'food' ? "Details (calories, taste, price)..." : "What's on your mind?"}
-                      className={`w-full pl-10 pr-4 py-3 text-sm text-gray-600 placeholder-gray-300 bg-gray-50/50 rounded-2xl focus:bg-white focus:ring-2 focus:ring-purple-100 outline-none resize-none transition-all ${recordMode === 'life' ? 'h-32 text-base' : 'h-20'}`}
+                      placeholder="Add calories, price, or thoughts..."
+                      className="w-full text-sm text-gray-600 placeholder-gray-300 bg-transparent outline-none resize-none h-16"
                     />
                   </div>
                 </div>
 
-                {/* 心情选择 */}
-                <div className="space-y-2">
-                   <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest pl-1">Mood</label>
-                   <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                    {mainMoods.map(m => (
-                      <button
-                        key={m.label}
-                        onClick={() => setMood(m.label)}
-                        className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
-                          mood === m.label 
-                          ? `${m.color} shadow-sm scale-105` 
-                          : 'bg-white border-gray-100 text-gray-400 hover:bg-gray-50'
-                        }`}
-                      >
-                        <span className="text-base">{m.emoji}</span>
-                        {m.label}
-                      </button>
-                    ))}
-                    <button onClick={() => setShowOtherMoods(!showOtherMoods)} className="px-3 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-400 hover:bg-gray-100 border border-transparent hover:border-gray-200 transition-all">
-                      +
+                {/* Mood */}
+                <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                  {mainMoods.map(m => (
+                    <button
+                      key={m.label}
+                      onClick={() => setMood(m.label)}
+                      className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                        mood === m.label 
+                        ? `${m.color} shadow-sm scale-105` 
+                        : 'bg-white border-gray-100 text-gray-400 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="text-base">{m.emoji}</span>
+                      {m.label}
                     </button>
-                  </div>
+                  ))}
+                  <button onClick={() => setShowOtherMoods(!showOtherMoods)} className="px-3 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-400 hover:bg-gray-100 border border-transparent hover:border-gray-200 transition-all">
+                    +
+                  </button>
                 </div>
                 
-                {/* 更多心情 (现在可以点了！) */}
                 {showOtherMoods && (
                    <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-2xl border border-gray-100 animate-in fade-in slide-in-from-top-1">
                       {otherMoods.map(m => (
                         <button 
                           key={m.label} 
-                          type="button" // 关键修复：防止触发表单
+                          type="button" 
                           onClick={() => { setMood(m.label); setCustomMood(''); }} 
                           className={`px-3 py-1.5 bg-white rounded-lg text-xs font-medium border shadow-sm transition-all hover:scale-105 ${
                              mood === m.label ? 'border-purple-400 text-purple-600 ring-1 ring-purple-100' : 'border-gray-100 text-gray-600 hover:border-gray-300'
@@ -242,24 +230,24 @@ export default function MagicBar() {
                    </div>
                 )}
 
-                {/* 底部提交 */}
+                {/* 底部工具栏：按钮变 Save，去掉了多余的图标 */}
                 <div className="flex items-center justify-between pt-2">
                    <div className="flex gap-1">
-                      <button onClick={() => setIsCameraOpen(true)} className="p-2.5 text-gray-400 hover:bg-blue-50 hover:text-blue-500 rounded-xl transition-colors"><Camera size={20}/></button>
+                      <button onClick={() => setIsCameraOpen(true)} className="p-2 text-gray-400 hover:bg-blue-50 hover:text-blue-500 rounded-xl transition-colors"><Camera size={20}/></button>
                       <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden"/>
-                      <button onClick={() => fileInputRef.current?.click()} className="p-2.5 text-gray-400 hover:bg-green-50 hover:text-green-500 rounded-xl transition-colors"><ImageIcon size={20}/></button>
+                      <button onClick={() => fileInputRef.current?.click()} className="p-2 text-gray-400 hover:bg-green-50 hover:text-green-500 rounded-xl transition-colors"><ImageIcon size={20}/></button>
                    </div>
                    <button 
                      onClick={handleSubmit}
                      disabled={isSubmitting}
-                     className="bg-[#F5C066] hover:bg-[#E0A845] text-white px-8 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-orange-100 transition-all active:scale-95 flex items-center gap-2"
+                     className="bg-[#F5C066] hover:bg-[#E0A845] text-white px-8 py-2 rounded-xl font-bold text-sm shadow-lg shadow-orange-100 transition-all active:scale-95"
                    >
-                     {isSubmitting ? 'Saving...' : 'Save Record'} <Send size={16} />
+                     {isSubmitting ? '...' : 'Save'}
                    </button>
                 </div>
               </div>
 
-              {/* 右侧模式切换栏 */}
+              {/* 右侧切换栏保持不变 */}
               <div className="w-10 flex flex-col gap-3 pt-8">
                  <button 
                    onClick={() => setRecordMode('food')}
