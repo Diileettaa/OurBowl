@@ -40,7 +40,8 @@ export default function Dashboard() {
   return (
     // ✨ 背景重点：从极淡奶黄(#FFFBEB) 渐变到 冷灰白(#F1F5F9)
     // 这里的 padding-bottom (pb-20) 是为了防止底部内容贴边
-    <div className="min-h-screen bg-gradient-to-b from-[#F9FAFB] via-[#FDFDFD] to-[#F1F5F9] pb-20 relative">
+    <div className="min-h-screen bg-[#F9FAFB] pb-20 relative">
+
 
 
       
