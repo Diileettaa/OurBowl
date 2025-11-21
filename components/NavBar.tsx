@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
-import { Home, Calendar, Globe, Users, ChevronDown, Check, Plus, Map } from 'lucide-react'
+import { Home, Calendar, Globe, Users, ChevronDown, Check, Map } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function NavBar({ userEmail }: { userEmail?: string }) {
@@ -25,18 +25,17 @@ export default function NavBar({ userEmail }: { userEmail?: string }) {
   ]
 
   return (
-    // ✨ 重点：这里没有任何 bg- 颜色，它是完全透明的，让页面的渐变色透上来
-    <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 pointer-events-none flex justify-center bg-gradient-to-b from-[#F9FAFB]/90 to-transparent backdrop-blur-sm">
-
+    // ✨ 修复：彻底移除了背景色和模糊，现在它是完全隐形的容器
+    <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 pointer-events-none flex justify-center">
 
       <div className="w-full max-w-5xl flex justify-between items-center pointer-events-auto">
         
-        {/* 1. Logo (左侧) */}
+        {/* 1. Logo */}
         <Link href="/dashboard" className="text-2xl font-black text-gray-800 tracking-tighter hover:scale-105 transition-transform">
           Ourbowl<span className="text-[#F5C066]">.</span>
         </Link>
 
-        {/* 2. 悬浮胶囊菜单 (中间) - 只有这个胶囊有背景色 */}
+        {/* 2. 菜单 */}
         <div className="hidden md:flex items-center gap-1 bg-white/80 backdrop-blur-xl px-2 py-2 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50">
           {navItems.map((item) => {
             const isActive = pathname === item.href
@@ -57,7 +56,7 @@ export default function NavBar({ userEmail }: { userEmail?: string }) {
           })}
         </div>
 
-        {/* 3. 角色切换 (右侧) */}
+        {/* 3. 角色切换 */}
         <div className="relative">
           <button 
             onClick={() => setIsProfileOpen(!isProfileOpen)}
